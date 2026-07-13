@@ -11,11 +11,14 @@
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <link rel="stylesheet" href="./src/styles/base.css" />
   <link rel="stylesheet" href="./src/styles/layout.css" />
+  <link rel="stylesheet" href="./src/styles/components.css" />
+  <link rel="stylesheet" href="./src/styles/sidebar-panels.css" />
+  <link rel="stylesheet" href="./src/styles/timeline.css" />
+  <link rel="stylesheet" href="./src/styles/preview.css" />
 </head>
 <body>
   <div id="app">
-    <!-- ETAP 2 mounts the real editor UI (media panel, timeline, preview, settings/template panels) here -->
-    <canvas id="preview-canvas" width="1080" height="1920"></canvas>
+    <!-- EditorView (src/ui/views/editor-view.js) mounts the full editor shell here -->
   </div>
 
   <script type="module" src="./src/app.js"></script>

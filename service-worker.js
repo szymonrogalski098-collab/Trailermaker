@@ -11,7 +11,7 @@
  * Pages subpath (e.g. https://user.github.io/Trailermaker/).
  */
 
-const CACHE_NAME = 'trailer-studio-v1';
+const CACHE_NAME = 'trailer-studio-v2';
 
 // Hand-maintained app-shell manifest (no bundler in ETAP 1). TODO: generate
 // this automatically once a build step exists.
@@ -54,12 +54,21 @@ const APP_SHELL_FILES = [
   './src/modules/timeline-engine/effects/zoom.js',
   './src/modules/timeline-engine/effects/glitch.js',
   './src/modules/timeline-engine/effects/pan.js',
+  './src/ui/dom-utils.js',
+  './src/ui/components/button.js',
+  './src/ui/components/panel-header.js',
   './src/ui/views/editor-view.js',
   './src/ui/views/timeline-view.js',
   './src/ui/views/media-library-view.js',
   './src/ui/views/export-view.js',
+  './src/ui/views/settings-panel-view.js',
+  './src/ui/views/templates-panel-view.js',
   './src/styles/base.css',
   './src/styles/layout.css',
+  './src/styles/components.css',
+  './src/styles/sidebar-panels.css',
+  './src/styles/timeline.css',
+  './src/styles/preview.css',
 ];
 
 self.addEventListener('install', (event) => {
