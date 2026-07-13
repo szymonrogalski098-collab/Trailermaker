@@ -52,3 +52,13 @@
   flex: 1;
   accent-color: var(--color-accent);
 }
+
+@media (max-width: 900px) {
+  /* height:100% collapses when the parent's height comes from 'auto' grid
+   * rows on the stacked mobile layout, so size the stage by width instead. */
+  .preview-stage {
+    height: auto;
+    width: min(80vw, 360px);
+    max-height: none;
+  }
+}

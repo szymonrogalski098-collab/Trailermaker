@@ -47,7 +47,8 @@
   background: var(--color-bg-panel-alt);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .timeline__playhead {
@@ -105,4 +106,19 @@
   background: var(--color-border);
   border-radius: var(--radius-sm);
   cursor: ew-resize;
+}
+
+@media (max-width: 900px) {
+  .timeline__toolbar {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .timeline__duration {
+    margin-left: 0;
+  }
+
+  .timeline__ruler {
+    display: none;
+  }
 }

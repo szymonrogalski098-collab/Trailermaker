@@ -1,4 +1,10 @@
-/* App shell grid: header / sidebar-left / preview / sidebar-right / timeline. */
+/* App shell grid: header / sidebar-left / preview / sidebar-right / timeline.
+ *
+ * Desktop: 3-column grid (media/templates | preview | settings) with a
+ * fixed-height timeline strip along the bottom.
+ * Mobile (<=900px): single column, stacked top-to-bottom, scrollable —
+ * a fixed 3-column desktop grid cannot fit a phone viewport.
+ */
 
 .editor-shell {
   display: grid;
@@ -10,6 +16,22 @@
   grid-template-rows: 56px 1fr 220px;
   height: 100vh;
   width: 100vw;
+}
+
+@media (max-width: 900px) {
+  .editor-shell {
+    grid-template-areas:
+      'header'
+      'preview'
+      'sidebar-left'
+      'sidebar-right'
+      'timeline';
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+  }
 }
 
 .editor-header {
@@ -30,6 +52,20 @@
 
 .editor-header input.field__input {
   max-width: 220px;
+}
+
+@media (max-width: 900px) {
+  .editor-header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .editor-header input.field__input {
+    max-width: none;
+    flex: 1;
+    min-width: 120px;
+  }
 }
 
 .editor-sidebar-left {
@@ -65,4 +101,22 @@
   background: var(--color-bg-panel);
   border-top: 1px solid var(--color-border);
   overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .editor-sidebar-left,
+  .editor-sidebar-right {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    max-height: 60vh;
+  }
+
+  .editor-preview {
+    overflow: visible;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .editor-timeline-section {
+    height: 220px;
+  }
 }
