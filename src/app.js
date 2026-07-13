@@ -4,12 +4,14 @@ import { createProject, setActiveProject } from './modules/project-manager/proje
 import { EditorView } from './ui/views/editor-view.js';
 
 // Self-registering modules: importing them runs their registerEffect/
-// registerTemplate side effects so the registries are populated at boot.
+// registerTemplate side effects (or, for history-manager, subscribes it to
+// the EventBus) so they're active before bootstrap() runs.
 import './modules/timeline-engine/effects/fade.js';
 import './modules/timeline-engine/effects/zoom.js';
 import './modules/timeline-engine/effects/glitch.js';
 import './modules/timeline-engine/effects/pan.js';
 import './modules/template-system/templates/crazygames-default.js';
+import './modules/history-manager/history-manager.js';
 
 const log = createLogger('App');
 

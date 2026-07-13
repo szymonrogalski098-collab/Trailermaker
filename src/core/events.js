@@ -26,3 +26,5 @@ export const EXPORT_COMPLETE = 'export:complete';
 export const EXPORT_FAILED = 'export:failed';
 
 export const SCENARIO_IMPORTED = 'scenario:imported';
+
+export const HISTORY_CHANGED = 'history:changed';
