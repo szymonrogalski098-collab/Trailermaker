@@ -1,14 +1,31 @@
-import { NotImplementedError } from '../../../core/errors.js';
+import { computeCoverRect } from '../../preview-engine/canvas-renderer.js';
 import { registerEffect } from './effect-registry.js';
 
+const MAX_OFFSET_RATIO = 0.08;
+
 /**
- * Pan/shift (przesunięcie) effect. Canvas translate implementation lands
- * in ETAP 3.
+ * Pan/shift (przesunięcie): slightly oversized frame slides horizontally
+ * across the canvas as the clip plays.
  * @type {import('./effect-registry.js').EffectRenderer}
  */
-function renderPan(_ctx, _frameSource, _progress, _params) {
-  // TODO(ETAP-3): apply a translate transform interpolated by progress/params
-  throw new NotImplementedError('pan effect rendering is implemented in ETAP 3');
+function renderPan(ctx, frameSource, progress, params) {
+  const rect = computeCoverRect(ctx.canvas, frameSource);
+  const offsetRatio = params.offsetRatio || MAX_OFFSET_RATIO;
+  const maxOffset = ctx.canvas.width * offsetRatio;
+  const offsetX = maxOffset * (progress * 2 - 1); // sweeps from -max to +max
+
+  // Oversize slightly so the pan never reveals empty canvas at the edges.
+  const overscan = 1 + offsetRatio * 2;
+
+  ctx.save();
+  ctx.drawImage(
+    frameSource,
+    rect.x - (rect.width * overscan - rect.width) / 2 + offsetX,
+    rect.y - (rect.height * overscan - rect.height) / 2,
+    rect.width * overscan,
+    rect.height * overscan
+  );
+  ctx.restore();
 }
 
 registerEffect('pan', renderPan);

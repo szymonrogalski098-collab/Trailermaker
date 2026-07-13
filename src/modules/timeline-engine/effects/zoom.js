@@ -1,14 +1,24 @@
-import { NotImplementedError } from '../../../core/errors.js';
+import { computeCoverRect } from '../../preview-engine/canvas-renderer.js';
 import { registerEffect } from './effect-registry.js';
 
+const MAX_SCALE = 1.15;
+
 /**
- * Zoom (Ken Burns style scale) effect. Canvas transform implementation
- * lands in ETAP 3.
+ * Zoom (Ken Burns style scale-in) driven by clip progress.
  * @type {import('./effect-registry.js').EffectRenderer}
  */
-function renderZoom(_ctx, _frameSource, _progress, _params) {
-  // TODO(ETAP-3): apply a scale transform interpolated by progress/params
-  throw new NotImplementedError('zoom effect rendering is implemented in ETAP 3');
+function renderZoom(ctx, frameSource, progress, params) {
+  const maxScale = params.maxScale || MAX_SCALE;
+  const scale = 1 + (maxScale - 1) * progress;
+  const rect = computeCoverRect(ctx.canvas, frameSource);
+  const { width: cw, height: ch } = ctx.canvas;
+
+  ctx.save();
+  ctx.translate(cw / 2, ch / 2);
+  ctx.scale(scale, scale);
+  ctx.translate(-cw / 2, -ch / 2);
+  ctx.drawImage(frameSource, rect.x, rect.y, rect.width, rect.height);
+  ctx.restore();
 }
 
 registerEffect('zoom', renderZoom);
