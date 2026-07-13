@@ -11,7 +11,7 @@
  * Pages subpath (e.g. https://user.github.io/Trailermaker/).
  */
 
-const CACHE_NAME = 'trailer-studio-v2';
+const CACHE_NAME = 'trailer-studio-v3';
 
 // Hand-maintained app-shell manifest (no bundler in ETAP 1). TODO: generate
 // this automatically once a build step exists.
