@@ -1,9 +1,10 @@
 import { eventBus } from '../../core/event-bus.js';
-import { PREVIEW_PAUSED, PREVIEW_PLAYING, PREVIEW_TICK, PROJECT_CHANGED, PROJECT_LOADED, TIMELINE_UPDATED } from '../../core/events.js';
+import { HISTORY_CHANGED, PREVIEW_PAUSED, PREVIEW_PLAYING, PREVIEW_TICK, PROJECT_CHANGED, PROJECT_LOADED, TIMELINE_UPDATED } from '../../core/events.js';
 import { attach, getCurrentTime, getSequenceDuration, isPreviewPlaying, pause, play, seek } from '../../modules/preview-engine/preview-engine.js';
 import { exportProject, onProgress } from '../../modules/export-engine/export-engine.js';
 import { getActiveProject } from '../../modules/project-manager/project-manager.js';
 import { getClips } from '../../modules/timeline-engine/timeline-engine.js';
+import { canRedo, canUndo, redo, undo } from '../../modules/history-manager/history-manager.js';
 import { createElement, clearElement } from '../dom-utils.js';
 import { createButton } from '../components/button.js';
 import { MediaLibraryView } from './media-library-view.js';
@@ -54,6 +55,7 @@ export class EditorView {
 
     this._wirePreviewControls(preview);
     this._wireExport(exportView);
+    this._wireHistory();
   }
 
   /** @returns {HTMLElement} */
@@ -72,6 +74,23 @@ export class EditorView {
     actions.append(undoBtn, redoBtn, exportBtn);
     header.append(brand, titleInput, actions);
     return header;
+  }
+
+  /** Wires the header's Undo/Redo buttons to the history manager. */
+  _wireHistory() {
+    const undoBtn = /** @type {HTMLButtonElement} */ (this.rootElement.querySelector('#btn-undo'));
+    const redoBtn = /** @type {HTMLButtonElement} */ (this.rootElement.querySelector('#btn-redo'));
+
+    undoBtn.addEventListener('click', () => undo());
+    redoBtn.addEventListener('click', () => redo());
+
+    const refreshButtons = () => {
+      undoBtn.disabled = !canUndo();
+      redoBtn.disabled = !canRedo();
+    };
+
+    eventBus.on(HISTORY_CHANGED, refreshButtons);
+    refreshButtons();
   }
 
   /** @param {ExportView} exportView */

@@ -89,6 +89,14 @@ Workera — żyją wyłącznie w IndexedDB.
 7. **JSON Parser** — `validateScenario`, `scenarioToProject`, `importScenarioJson`. Logika
    czysto strukturalna, zgodna ze stałym schematem JSON generowanym przez AI (`version`,
    `project`, `template`, `scenes[]`, `outro`).
+8. **History Manager** (v0.5, `modules/history-manager/`) — `undo`, `redo`, `canUndo`,
+   `canRedo`. Nie ma własnej logiki śledzenia zmian per moduł — po prostu nasłuchuje tych
+   samych zdarzeń EventBus, na które reagują już wszystkie widoki
+   (`TIMELINE_UPDATED`/`PROJECT_CHANGED`), robi głęboką kopię `Project` przy każdej zmianie
+   i przy `undo`/`redo` podmienia aktywny projekt przez `ProjectManager.setActiveProject`.
+   Dzięki temu żaden inny moduł nie musiał zostać dotknięty — UI już reagował na zmianę
+   aktywnego projektu. Historia resetuje się przy wczytaniu innego zapisanego projektu
+   (`PROJECT_LOADED`).
 
 ## IndexedDB (`src/storage/db.js`)
 
@@ -118,6 +126,8 @@ exports. Jedna odpowiedzialność na plik.
 - **ETAP 4** — eksport MP4 przez FFmpeg.wasm (vendorowany lokalnie w `src/vendor/ffmpeg/`,
   cache'owany on-demand, nigdy z CDN).
 
-Przyszłe wersje (nieplanowane teraz): v0.5 — wiele ścieżek, undo/redo, autosave, edytor
-szablonów, eksport/import projektów; v1.0 — keyframe'y, animacje tekstu, pluginy, więcej
-efektów, zaawansowany timeline, optymalizacja wydajności.
+**v0.5 (w toku):** undo/redo ✅ (`history-manager`, przyciski w headerze). Pozostałe:
+wiele ścieżek, autosave, edytor szablonów, eksport/import projektów jako pliki.
+
+**v1.0 (nierozpoczęte):** keyframe'y, animacje tekstu, pluginy, więcej efektów,
+zaawansowany timeline, optymalizacja wydajności.
