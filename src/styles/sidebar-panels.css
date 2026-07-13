@@ -1,0 +1,58 @@
+/* Media panel and templates panel visuals (left sidebar tab panels). */
+
+.media-panel,
+.templates-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.media-panel__toolbar {
+  padding: var(--space-3);
+}
+
+.media-panel__dropzone {
+  margin: 0 var(--space-3) var(--space-3);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.media-panel__grid,
+.templates-panel__grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+  align-content: start;
+  overflow-y: auto;
+}
+
+.asset-card__thumb {
+  aspect-ratio: 9 / 16;
+  background: linear-gradient(160deg, var(--color-bg-elevated), var(--color-bg-panel));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.asset-card__name,
+.asset-card__meta {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+}
+
+.asset-card__name {
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.asset-card__meta {
+  color: var(--color-text-muted);
+}
