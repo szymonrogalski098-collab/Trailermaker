@@ -24,6 +24,11 @@ export class PlaybackClock {
         this.currentTime += (timestamp - this._lastTimestamp) / 1000;
         onTick(this.currentTime);
       }
+      // onTick can call stop() synchronously (e.g. playback reached the
+      // end) — if it did, _rafId is now null and this loop must not
+      // reschedule itself, or stop() gets silently undone and the clock
+      // keeps ticking forever with a "paused" isPlaying state.
+      if (this._rafId === null) return;
       this._lastTimestamp = timestamp;
       this._rafId = requestAnimationFrame(step);
     };

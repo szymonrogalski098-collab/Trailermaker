@@ -1,12 +1,16 @@
 import { eventBus } from '../../core/event-bus.js';
 import { PREVIEW_PAUSED, PREVIEW_PLAYING, PREVIEW_TICK, PROJECT_CHANGED, PROJECT_LOADED, TIMELINE_UPDATED } from '../../core/events.js';
 import { attach, getCurrentTime, getSequenceDuration, isPreviewPlaying, pause, play, seek } from '../../modules/preview-engine/preview-engine.js';
+import { exportProject, onProgress } from '../../modules/export-engine/export-engine.js';
+import { getActiveProject } from '../../modules/project-manager/project-manager.js';
+import { getClips } from '../../modules/timeline-engine/timeline-engine.js';
 import { createElement, clearElement } from '../dom-utils.js';
 import { createButton } from '../components/button.js';
 import { MediaLibraryView } from './media-library-view.js';
 import { TemplatesPanelView } from './templates-panel-view.js';
 import { SettingsPanelView } from './settings-panel-view.js';
 import { TimelineView } from './timeline-view.js';
+import { ExportView } from './export-view.js';
 
 /**
  * @param {number} seconds
@@ -46,8 +50,10 @@ export class EditorView {
     new TemplatesPanelView(sidebarLeft.templatesPanel);
     new SettingsPanelView(shell.querySelector('.editor-sidebar-right'));
     new TimelineView(shell.querySelector('.editor-timeline-section'));
+    const exportView = new ExportView(shell);
 
     this._wirePreviewControls(preview);
+    this._wireExport(exportView);
   }
 
   /** @returns {HTMLElement} */
@@ -62,11 +68,42 @@ export class EditorView {
     const undoBtn = createButton('Undo', { size: 'sm', disabled: true, id: 'btn-undo' });
     const redoBtn = createButton('Redo', { size: 'sm', disabled: true, id: 'btn-redo' });
     const exportBtn = createButton('Export MP4', { variant: 'primary', size: 'sm', id: 'btn-export' });
-    exportBtn.addEventListener('click', () => console.log('Export MP4 — implemented in ETAP 4'));
 
     actions.append(undoBtn, redoBtn, exportBtn);
     header.append(brand, titleInput, actions);
     return header;
+  }
+
+  /** @param {ExportView} exportView */
+  _wireExport(exportView) {
+    const exportBtn = this.rootElement.querySelector('#btn-export');
+    exportBtn.addEventListener('click', async () => {
+      const project = getActiveProject();
+      if (!project) return;
+
+      let clips = [];
+      try {
+        clips = getClips();
+      } catch {
+        clips = [];
+      }
+      if (clips.length === 0) {
+        alert('Add at least one clip before exporting.');
+        return;
+      }
+
+      exportView.show();
+      const unsubscribe = onProgress((progress) => exportView.setProgress(progress));
+      try {
+        const blob = await exportProject(project, { fps: project.fps, resolution: project.resolution });
+        const filename = `${(project.title || 'trailer').trim().replace(/\s+/g, '-').toLowerCase()}.mp4`;
+        exportView.setComplete(blob, filename);
+      } catch (error) {
+        exportView.setError(error.message);
+      } finally {
+        unsubscribe();
+      }
+    });
   }
 
   /**

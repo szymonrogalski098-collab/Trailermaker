@@ -1,0 +1,49 @@
+/* Export progress overlay. */
+
+.export-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.export-overlay[hidden] {
+  display: none;
+}
+
+.export-panel {
+  width: min(90vw, 360px);
+  padding: var(--space-5);
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.export-panel__title {
+  font-size: var(--font-size-lg);
+}
+
+.export-panel__status {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.export-panel__progress-track {
+  height: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-elevated);
+  overflow: hidden;
+}
+
+.export-panel__progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  transition: width 0.15s ease;
+}

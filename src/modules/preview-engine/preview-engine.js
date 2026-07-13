@@ -173,8 +173,12 @@ export function play() {
   clock.start((t) => {
     const total = getSequenceDuration();
     if (t >= total) {
+      // Pin the playhead to the end (not back to 0) before stopping —
+      // pause() is the single place that stops the render loop, pauses
+      // the active video, and reports the new state, so canvas, timeline
+      // playhead, and video element can't drift out of sync with it.
+      seek(total);
       pause();
-      seek(0);
       return;
     }
     renderFrame(t);
