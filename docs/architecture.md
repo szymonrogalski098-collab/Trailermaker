@@ -25,12 +25,22 @@ src/
     timeline-engine/ (+ effects/: effect-registry, fade, zoom, glitch, pan)
     template-system/ (+ templates/: crazygames-default)
     preview-engine/  (canvas-renderer.js, playback-clock.js)
-    export-engine/   (+ ffmpeg-worker.js)
+    export-engine/   (export-engine.js — renderuje klatki i steruje FFmpeg.wasm)
     json-parser/
-  ui/views/          — kontrolery widoków (ETAP 2)
-  styles/            — CSS (ETAP 2)
-  vendor/ffmpeg/     — pliki ffmpeg.wasm (ETAP 4)
+  ui/views/          — kontrolery widoków
+  styles/            — CSS
+  vendor/ffmpeg/
+    lib/             — vendorowany @ffmpeg/ffmpeg (ESM: classes.js, worker.js, ...)
+    core/            — vendorowany @ffmpeg/core (ffmpeg-core.js + ffmpeg-core.wasm, ~30MB)
 ```
+
+`@ffmpeg/ffmpeg`'s ESM build zarządza własnym Web Workerem (`vendor/ffmpeg/lib/worker.js`,
+rozwiązywanym relatywnie przez `import.meta.url`) — nie potrzeba osobnego,
+własnoręcznie pisanego wrappera workera; biblioteka już izoluje ciężką pracę WASM od
+głównego wątku. `ffmpeg-core.wasm` (~30MB) jest wpisany do serwisu jako plik statyczny, ale
+celowo **nie jest precache'owany** przy instalacji PWA — Service Worker cache'uje go
+dopiero przy pierwszym realnym eksporcie (cache-on-demand), żeby instalacja aplikacji nie
+wymagała pobrania 30MB dla użytkowników, którzy nigdy nie eksportują.
 
 ## PWA
 
@@ -53,7 +63,7 @@ Workera — żyją wyłącznie w IndexedDB.
 - `app.js` inicjalizuje IndexedDB, rejestruje Service Workera, importuje samorejestrujące się
   efekty/szablony i montuje `EditorView`.
 
-## Moduły (ETAP 1: publiczne API + JSDoc, stub tam gdzie zależy od Canvas/DOM/ffmpeg)
+## Moduły (wszystkie w pełni działające)
 
 1. **Project Manager** — `createProject`, `validateProject`, `saveProject`, `loadProject`,
    `listProjects`, `deleteProject`, `getActiveProject`, `setActiveProject`. Jedyne źródło
@@ -62,17 +72,23 @@ Workera — żyją wyłącznie w IndexedDB.
    `getObjectURL`. Jedyna brama do Blobów mediów.
 3. **Timeline Engine** — `addClip`, `removeClip`, `updateClipTiming`, `reorderClip`,
    `addEffect`, `removeEffect`, `addTextOverlay`, `getTotalDuration`, `getClips`. Efekty
-   jako rozszerzalny rejestr (`effects/effect-registry.js`); rysowanie na Canvas — ETAP 3.
+   jako rozszerzalny rejestr (`effects/effect-registry.js`), realnie rysowane na Canvas
+   (fade/zoom/glitch/pan).
 4. **Template System** — `registerTemplate`, `listTemplates`, `getTemplate`,
    `applyTemplate`. Wbudowany szablon `crazygames_default` kończący się logo gry + logo
    studia.
 5. **Preview Engine** — Canvas + HTML5 Video, bez ffmpeg. `attach`, `play`, `pause`,
-   `seek`, `getCurrentTime`. Realne rysowanie — ETAP 3 (stub w ETAP 1).
-6. **Export Engine** — `exportProject`, `onProgress`. Stub w ETAP 1 (`NotImplementedError`),
-   realna integracja FFmpeg.wasm w ETAP 4.
-7. **JSON Parser** — `validateScenario`, `scenarioToProject`, `importScenarioJson`. W pełni
-   działające już w ETAP 1 — logika czysto strukturalna, zgodna ze stałym schematem JSON
-   generowanym przez AI (`version`, `project`, `template`, `scenes[]`, `outro`).
+   `seek`, `getCurrentTime`. rAF-owy zegar, leniwe ładowanie mediów, natywne odtwarzanie
+   wideo dla aktywnego klipu.
+6. **Export Engine** — `exportProject(project, options)`, `onProgress(handler)`. Renderuje
+   projekt klatka-po-klatce na osobnym Canvasie (te same funkcje co Preview Engine —
+   `canvas-renderer.js` — więc podgląd i eksport nigdy się nie rozjeżdżają), zapisuje
+   klatki jako PNG do wirtualnego FS FFmpeg.wasm, koduje `libx264`/`yuv420p` do MP4 i
+   zwraca `Blob`. FFmpeg jest ładowany i terminowany przy każdym eksporcie — nigdy nie
+   działa w tle podczas podglądu.
+7. **JSON Parser** — `validateScenario`, `scenarioToProject`, `importScenarioJson`. Logika
+   czysto strukturalna, zgodna ze stałym schematem JSON generowanym przez AI (`version`,
+   `project`, `template`, `scenes[]`, `outro`).
 
 ## IndexedDB (`src/storage/db.js`)
 
@@ -92,14 +108,15 @@ Pliki: kebab-case. Funkcje/zmienne: camelCase. Typy: PascalCase (zdefiniowane w
 (`NotImplementedError`, `ValidationError`, `SchemaError`, `StorageError`). Wyłącznie named
 exports. Jedna odpowiedzialność na plik.
 
-## Etapy
+## Etapy (wszystkie zrealizowane)
 
-- **ETAP 1 (ten dokument)** — architektura: struktura folderów, PWA, szkielet modułów,
-  kontrakty API, w pełni działające `core/`, `storage/`, JSON Parser.
+- **ETAP 1** — architektura: struktura folderów, PWA, szkielet modułów, kontrakty API,
+  w pełni działające `core/`, `storage/`, JSON Parser.
 - **ETAP 2** — UI: panel mediów, timeline, podgląd, ustawienia, szablony.
 - **ETAP 3** — logika MVP: import plików, zarządzanie mediami, timeline, zapisywanie/
   odczytywanie projektu, realne rysowanie Canvas (Preview Engine, efekty).
-- **ETAP 4** — eksport MP4 przez FFmpeg.wasm.
+- **ETAP 4** — eksport MP4 przez FFmpeg.wasm (vendorowany lokalnie w `src/vendor/ffmpeg/`,
+  cache'owany on-demand, nigdy z CDN).
 
 Przyszłe wersje (nieplanowane teraz): v0.5 — wiele ścieżek, undo/redo, autosave, edytor
 szablonów, eksport/import projektów; v1.0 — keyframe'y, animacje tekstu, pluginy, więcej
