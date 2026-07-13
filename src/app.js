@@ -1,5 +1,6 @@
 import { createLogger } from './core/logger.js';
 import { openDatabase } from './storage/db.js';
+import { createProject, setActiveProject } from './modules/project-manager/project-manager.js';
 import { EditorView } from './ui/views/editor-view.js';
 
 // Self-registering modules: importing them runs their registerEffect/
@@ -27,8 +28,8 @@ async function registerServiceWorker() {
 }
 
 /**
- * App entry point: initializes storage, registers the service worker, and
- * mounts the root UI view. Real UI rendering lands in ETAP 2.
+ * App entry point: initializes storage, registers the service worker,
+ * ensures a working project is active, and mounts the root UI view.
  */
 async function bootstrap() {
   await openDatabase();
@@ -36,10 +37,12 @@ async function bootstrap() {
 
   await registerServiceWorker();
 
+  setActiveProject(createProject());
+
   const root = document.getElementById('app');
   new EditorView(root);
 
-  log.info('Trailer Studio bootstrapped (ETAP 1 architecture skeleton)');
+  log.info('Trailer Studio bootstrapped');
 }
 
 bootstrap();
