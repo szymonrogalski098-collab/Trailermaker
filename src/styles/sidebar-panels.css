@@ -21,6 +21,11 @@
   font-size: var(--font-size-sm);
 }
 
+.media-panel__dropzone.is-dragover {
+  border-color: var(--color-accent);
+  color: var(--color-text-secondary);
+}
+
 .media-panel__grid,
 .templates-panel__grid {
   flex: 1;
@@ -33,11 +38,66 @@
 }
 
 .asset-card__thumb {
+  position: relative;
   aspect-ratio: 9 / 16;
   background: linear-gradient(160deg, var(--color-bg-elevated), var(--color-bg-panel));
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.asset-card__thumb video,
+.asset-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asset-card__delete {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.asset-card__delete:hover {
+  background: var(--color-danger);
+}
+
+.asset-card__logo-tags {
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 var(--space-2) var(--space-2);
+}
+
+.asset-card__logo-tags .btn {
+  flex: 1;
+  font-size: 10px;
+  padding: 2px 4px;
+}
+
+.settings-panel__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.settings-panel__actions .btn {
+  flex: 1;
+}
+
+.templates-panel__import {
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border);
 }
 
 .asset-card__name,
