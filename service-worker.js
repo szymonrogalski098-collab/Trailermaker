@@ -11,7 +11,16 @@
  * Pages subpath (e.g. https://user.github.io/Trailermaker/).
  */
 
-const CACHE_NAME = 'trailer-studio-v3';
+const CACHE_NAME = 'trailer-studio-v4';
+
+/**
+ * FFmpeg.wasm core (~30MB) is vendored locally but deliberately NOT
+ * precached at install time — most users never export, and forcing that
+ * download on every install would be wasteful. It's cached on-demand,
+ * cache-first, the first time export actually fetches it (see the fetch
+ * handler below), then reused offline from then on.
+ */
+const FFMPEG_CORE_PREFIX = './src/vendor/ffmpeg/core/';
 
 // Hand-maintained app-shell manifest (no bundler in ETAP 1). TODO: generate
 // this automatically once a build step exists.
@@ -34,7 +43,13 @@ const APP_SHELL_FILES = [
   './src/storage/projects-store.js',
   './src/storage/settings-store.js',
   './src/modules/export-engine/export-engine.js',
-  './src/modules/export-engine/ffmpeg-worker.js',
+  './src/vendor/ffmpeg/lib/classes.js',
+  './src/vendor/ffmpeg/lib/const.js',
+  './src/vendor/ffmpeg/lib/errors.js',
+  './src/vendor/ffmpeg/lib/index.js',
+  './src/vendor/ffmpeg/lib/types.js',
+  './src/vendor/ffmpeg/lib/utils.js',
+  './src/vendor/ffmpeg/lib/worker.js',
   './src/modules/json-parser/scenario-parser.js',
   './src/modules/json-parser/scenario-schema.js',
   './src/modules/media-manager/media-manager.js',
@@ -69,6 +84,7 @@ const APP_SHELL_FILES = [
   './src/styles/sidebar-panels.css',
   './src/styles/timeline.css',
   './src/styles/preview.css',
+  './src/styles/export.css',
 ];
 
 self.addEventListener('install', (event) => {
@@ -93,16 +109,29 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
 
+  const url = new URL(request.url);
+  const isFfmpegCore = url.pathname.includes(FFMPEG_CORE_PREFIX.replace('./', '/'));
+
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
 
-      return fetch(request).catch(() => {
-        if (request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-        return undefined;
-      });
+      return fetch(request)
+        .then((response) => {
+          // Cache the (large) ffmpeg core/wasm the first time export fetches
+          // it, so subsequent exports work fully offline too.
+          if (isFfmpegCore && response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return response;
+        })
+        .catch(() => {
+          if (request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+          return undefined;
+        });
     })
   );
 });
