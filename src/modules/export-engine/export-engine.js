@@ -10,19 +10,34 @@ const log = createLogger('ExportEngine');
 
 /** Vendored locally (not a CDN) so export works fully offline on GitHub Pages. */
 const CORE_JS_URL = new URL('../../vendor/ffmpeg/core/ffmpeg-core.js', import.meta.url).href;
+const CORE_WASM_URL = new URL('../../vendor/ffmpeg/core/ffmpeg-core.wasm', import.meta.url).href;
 
-/** Rendering (frame capture) accounts for this fraction of overall progress; the rest is encoding. */
-const RENDER_PROGRESS_SHARE = 0.85;
+/**
+ * Progress budget: the ~30MB core/wasm download is typically the slowest
+ * part of a first export (and the only part with no visual feedback if
+ * left to the ffmpeg worker to fetch opaquely), so it gets a meaningful
+ * share of the bar instead of sitting at a frozen 0%.
+ */
+const LOADING_MEDIA_SHARE = 0.05;
+const LOADING_FFMPEG_SHARE = 0.3;
+const RENDER_SHARE = 0.55;
+// remaining share goes to 'encoding'
 
 /** @type {Set<(progress: {ratio: number, stage: string}) => void>} */
 const progressHandlers = new Set();
+
+/** Highest ratio emitted so far in the current export, so the bar never visibly steps backward
+ * (the parallel core.js/wasm downloads can otherwise interleave out of order by a fraction). */
+let lastEmittedRatio = 0;
 
 /**
  * @param {number} ratio
  * @param {string} stage
  */
 function emitProgress(ratio, stage) {
-  const payload = { ratio: Math.min(1, Math.max(0, ratio)), stage };
+  const clamped = Math.min(1, Math.max(0, ratio));
+  lastEmittedRatio = Math.max(lastEmittedRatio, clamped);
+  const payload = { ratio: lastEmittedRatio, stage };
   progressHandlers.forEach((handler) => handler(payload));
   eventBus.emit(EXPORT_PROGRESS, payload);
 }
@@ -43,6 +58,47 @@ function canvasToBlob(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('canvas.toBlob failed'))), 'image/png');
   });
+}
+
+/**
+ * Fetches a URL as a Blob URL, reporting download progress. Used to load
+ * the FFmpeg core/wasm on the main thread — letting the ffmpeg worker
+ * fetch them internally works, but gives no progress feedback for a
+ * download that can be tens of MB, which looks like a hang on a slow
+ * connection.
+ * @param {string} url
+ * @param {string} mimeType
+ * @param {(ratio: number) => void} onProgress
+ * @returns {Promise<string>} object URL
+ */
+async function fetchAsBlobUrl(url, mimeType, onProgress) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: HTTP ${response.status}`);
+  }
+  if (!response.body) {
+    // Some browsers/proxies don't expose a readable stream body — fall back
+    // to a single-shot fetch with no incremental progress.
+    const buf = await response.arrayBuffer();
+    onProgress(1);
+    return URL.createObjectURL(new Blob([buf], { type: mimeType }));
+  }
+
+  const total = Number(response.headers.get('Content-Length')) || 0;
+  const reader = response.body.getReader();
+  const chunks = [];
+  let received = 0;
+
+  for (;;) {
+    // eslint-disable-next-line no-await-in-loop -- streamed download, chunks must be read sequentially
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    if (total > 0) onProgress(received / total);
+  }
+
+  return URL.createObjectURL(new Blob(chunks, { type: mimeType }));
 }
 
 /**
@@ -173,6 +229,7 @@ export async function exportProject(project, options = {}) {
     throw new ValidationError('Cannot export a project with no clips');
   }
 
+  lastEmittedRatio = 0;
   const fps = options.fps || project.fps;
   const resolution = options.resolution || project.resolution;
   const contentDuration = clips.reduce((max, c) => Math.max(max, c.end), 0);
@@ -180,18 +237,34 @@ export async function exportProject(project, options = {}) {
   const totalFrames = Math.max(1, Math.round(totalDuration * fps));
 
   const ffmpeg = new FFmpeg();
+  let coreBlobUrl;
+  let wasmBlobUrl;
 
   try {
     emitProgress(0, 'loading-media');
     const mediaElements = await preloadMedia(clips, project.outro);
+    emitProgress(LOADING_MEDIA_SHARE, 'loading-media');
 
     const canvas = document.createElement('canvas');
     const ctx = setupCanvas(canvas, resolution);
 
-    emitProgress(0, 'loading-ffmpeg');
-    await ffmpeg.load({ coreURL: CORE_JS_URL });
+    // Fetch core/wasm on the main thread (with real byte progress) instead
+    // of letting the ffmpeg worker fetch them opaquely — the ~30MB wasm
+    // download is otherwise the one step with no feedback, which looks
+    // like a hang on a slow connection.
+    [coreBlobUrl, wasmBlobUrl] = await Promise.all([
+      fetchAsBlobUrl(CORE_JS_URL, 'text/javascript', (p) =>
+        emitProgress(LOADING_MEDIA_SHARE + p * LOADING_FFMPEG_SHARE * 0.05, 'loading-ffmpeg')
+      ),
+      fetchAsBlobUrl(CORE_WASM_URL, 'application/wasm', (p) =>
+        emitProgress(LOADING_MEDIA_SHARE + LOADING_FFMPEG_SHARE * (0.05 + p * 0.95), 'loading-ffmpeg')
+      ),
+    ]);
+    await ffmpeg.load({ coreURL: coreBlobUrl, wasmURL: wasmBlobUrl });
+    emitProgress(LOADING_MEDIA_SHARE + LOADING_FFMPEG_SHARE, 'loading-ffmpeg');
 
-    emitProgress(0, 'rendering');
+    const renderStart = LOADING_MEDIA_SHARE + LOADING_FFMPEG_SHARE;
+    emitProgress(renderStart, 'rendering');
     for (let frame = 0; frame < totalFrames; frame++) {
       const t = frame / fps;
       // eslint-disable-next-line no-await-in-loop -- frames must be captured sequentially (shared canvas/video seek state)
@@ -202,10 +275,11 @@ export async function exportProject(project, options = {}) {
       const data = new Uint8Array(await blob.arrayBuffer());
       // eslint-disable-next-line no-await-in-loop
       await ffmpeg.writeFile(frameFileName(frame), data);
-      emitProgress(((frame + 1) / totalFrames) * RENDER_PROGRESS_SHARE, 'rendering');
+      emitProgress(renderStart + ((frame + 1) / totalFrames) * RENDER_SHARE, 'rendering');
     }
 
-    emitProgress(RENDER_PROGRESS_SHARE, 'encoding');
+    const encodeStart = renderStart + RENDER_SHARE;
+    emitProgress(encodeStart, 'encoding');
     const outputName = 'output.mp4';
     await ffmpeg.exec([
       '-framerate', String(fps),
@@ -228,6 +302,8 @@ export async function exportProject(project, options = {}) {
     throw error;
   } finally {
     ffmpeg.terminate();
+    if (coreBlobUrl) URL.revokeObjectURL(coreBlobUrl);
+    if (wasmBlobUrl) URL.revokeObjectURL(wasmBlobUrl);
   }
 }
 
