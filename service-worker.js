@@ -11,7 +11,7 @@
  * Pages subpath (e.g. https://user.github.io/Trailermaker/).
  */
 
-const CACHE_NAME = 'trailer-studio-v5';
+const CACHE_NAME = 'trailer-studio-v6';
 
 /**
  * FFmpeg.wasm core (~30MB) is vendored locally but deliberately NOT
@@ -44,6 +44,7 @@ const APP_SHELL_FILES = [
   './src/storage/settings-store.js',
   './src/modules/export-engine/export-engine.js',
   './src/modules/history-manager/history-manager.js',
+  './src/modules/project-manager/autosave.js',
   './src/vendor/ffmpeg/lib/classes.js',
   './src/vendor/ffmpeg/lib/const.js',
   './src/vendor/ffmpeg/lib/errors.js',
