@@ -1,0 +1,8 @@
+{
+  "name": "redstone-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobile-first Minecraft Java redstone editor and simulator (no build step)",
+  "scripts": { "test": "node tests/run.js" }
+}
