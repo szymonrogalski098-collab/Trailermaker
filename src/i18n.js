@@ -13,7 +13,7 @@ const DICT = {
     select_hint_a: 'Dotknij pierwszy róg', select_hint_b: 'Dotknij drugi róg', select_ready: 'Zaznaczono – kopiuj lub wytnij',
     paste_hint: 'Dotknij, aby wkleić', copied: 'Skopiowano', size_warn: 'Zmiana rozmiaru wyczyści świat. Kontynuować?',
     err_import: 'Błąd importu', facing: 'Kierunek', speed: 'Prędkość', empty: 'Brak zapisów', install: 'Zainstaluj',
-    clear_all: 'Wyczyść świat', daylight: 'Czujnik światła', held: 'Wybrano',
+    clear_all: 'Wyczyść świat', daylight: 'Czujnik światła', held: 'Wybrano', no_support: 'Brak podparcia dla tego bloku', done: 'Gotowe', reset_view: 'Wyśrodkuj widok',
   },
   en: {
     app: 'Redstone Studio', mode_place: 'Place', mode_remove: 'Remove', mode_interact: 'Interact', mode_select: 'Select',
@@ -28,7 +28,7 @@ const DICT = {
     select_hint_a: 'Tap the first corner', select_hint_b: 'Tap the second corner', select_ready: 'Selected – copy or cut',
     paste_hint: 'Tap to paste', copied: 'Copied', size_warn: 'Resizing clears the world. Continue?',
     err_import: 'Import error', facing: 'Facing', speed: 'Speed', empty: 'No saves', install: 'Install',
-    clear_all: 'Clear world', daylight: 'Daylight sensor', held: 'Selected',
+    clear_all: 'Clear world', daylight: 'Daylight sensor', held: 'Selected', no_support: 'This block has no support', done: 'Done', reset_view: 'Reset view',
   },
 };
 const BLOCK_NAMES_PL = {
