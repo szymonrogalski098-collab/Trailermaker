@@ -20,7 +20,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
 .btn.primary { background: var(--accent); border-color: var(--accent); font-weight: 700; }
 .btn[aria-pressed="true"], .btn.active { background: var(--accent2); border-color: var(--accent2); color: #04121f; font-weight: 700; }
 .btn:disabled { opacity: .35; }
-.label { min-width: 44px; padding: 0 8px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.label { white-space: nowrap; min-width: 44px; padding: 0 8px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .group .btn { border: 0; background: transparent; }
 .grow { flex: 1; text-align: right; color: var(--dim); }
 #stage { position: relative; min-height: 0; background: var(--bg); }
@@ -57,10 +57,10 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
 .err { color: #ff8a7a; margin: 6px 0; }
 @media (orientation: landscape) and (max-height: 520px) {
   #app { grid-template-rows: 1fr; grid-template-columns: 1fr auto; grid-template-areas: "stage bar"; }
-  #top { position: absolute; z-index: 3; left: calc(var(--sal) + 4px); top: calc(var(--sat) + 4px); background: rgba(23,26,32,.85); border: 1px solid var(--line); border-radius: 12px; flex-direction: row; padding: 4px; max-width: 70%; }
+  #top { position: absolute; z-index: 3; left: calc(var(--sal) + 4px); top: calc(var(--sat) + 4px); background: rgba(23,26,32,.85); border: 1px solid var(--line); border-radius: 12px; flex-direction: row; padding: 4px; max-width: calc(100% - 340px); overflow-x: auto; }
   #top .row { flex-wrap: nowrap; gap: 4px; } #top .btn { min-height: 40px; padding: 0 8px; }
-  #stage { grid-area: stage; } #bar { grid-area: bar; flex-direction: row; border-top: 0; border-left: 1px solid var(--line); overflow-y: auto; max-width: 52vw; }
-  #bar .row { flex-direction: column; align-items: stretch; } .modes .btn { min-height: 44px; }
+  #stage { grid-area: stage; } #bar { grid-area: bar; flex-direction: row; border-top: 0; border-left: 1px solid var(--line); overflow-y: auto; max-width: 320px; gap: 6px; }
+  #bar .row { flex-direction: column; align-items: stretch; justify-content: flex-start; } #bar .btn, .modes .btn, .tools .btn.chip { flex: 0 0 auto; min-height: 44px; } #bar .btn.sq { width: auto; } .tools { min-width: 150px; } .modes { min-width: 96px; }
   #selbar { position: absolute; z-index: 3; left: 8px; bottom: 8px; border: 1px solid var(--line); border-radius: 12px; }
   #drawer { max-height: 70vh; right: auto; width: 60%; bottom: 0; }
 }
