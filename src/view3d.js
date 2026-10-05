@@ -48,7 +48,7 @@ export class View3D {
   }
   resetCamera() {
     const w = this.world; this.target.set(w.sx / 2, Math.min(w.sy, 8) / 2, w.sz / 2);
-    this.dist = Math.max(w.sx, w.sz) * 1.4; this.theta = Math.PI * 0.25; this.phi = 1.0; this.updateCamera();
+    this.dist = Math.max(w.sx, w.sz) * 0.95; this.theta = Math.PI * 0.25; this.phi = 1.0; this.updateCamera();
   }
 
   makeOverlay() {

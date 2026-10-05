@@ -42,7 +42,9 @@ export class Gestures {
     if (this.state === 'pending') {
       if (Math.hypot(p.x - this.start.x, p.y - this.start.y) > MOVE_PX) {
         clearTimeout(this.timer); this.h.onCancel();
-        this.state = this.h.oneFingerDrag() ? 'drag' : 'dead'; this.last = p;
+        this.state = this.h.oneFingerDrag() ? 'drag' : 'dead';
+        if (this.state === 'drag') this.h.onDrag(p.x - this.start.x, p.y - this.start.y);
+        this.last = p;
       }
     } else if (this.state === 'drag') {
       this.h.onDrag(p.x - this.last.x, p.y - this.last.y); this.last = p;

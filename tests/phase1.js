@@ -216,3 +216,8 @@ test('update budget guard sets overflow instead of freezing', () => {
   s.put(0, 1, 5, 'redstone_block'); s.dustLine(1, 1, 5, DIR.E, 16);
   assert(s.e.overflow, 'overflow flagged');
 });
+test('layer 0 dust sits on the implicit bedrock floor', () => {
+  const s = makeSim(); s.world.setRaw(s.world.index(5, 0, 5), 0, 0);
+  s.put(5, 0, 5, 'redstone_dust'); s.put(4, 0, 5, 'redstone_block');
+  assertEq(s.power(5, 0, 5), 15);
+});

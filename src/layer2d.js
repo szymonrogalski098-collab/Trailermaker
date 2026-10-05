@@ -21,7 +21,7 @@ export class LayerView2D {
     this.dirty = true;
   }
   fit() {
-    this.resize(); this.zoom = 1;
+    this.resize(); this.zoom = Math.min(8, Math.max(1, 20 / this.base));
     this.panX = (this.cssW - this.world.sx * this.cell) / 2; this.panY = (this.cssH - this.world.sz * this.cell) / 2;
     this.dirty = true;
   }

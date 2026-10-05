@@ -10,14 +10,15 @@ export const BEHAVIORS = {};
 const reg = (id, b) => { BEHAVIORS[id] = b; };
 
 // ---------- support / survival ----------
+/** Sturdy support at neighbor n; the void below layer 0 counts as a bedrock floor. */
+function sturdyAt(w, p, dir) {
+  const n = w.neighbor(p, dir);
+  return n < 0 ? dir === DIR.D : isSturdy(w.ids[n]);
+}
 function supported(e, p) {
   const w = e.world; const b = BLOCKS[w.ids[p]];
-  if (b.needsFloor) return isSturdy(w.idAt(w.neighbor(p, DIR.D)));
-  if (b.attachable) {
-    const st = w.states[p];
-    if (b.name === 'redstone_torch' && S.face(st) !== 1) return isSturdy(w.idAt(w.neighbor(p, DIR.D)));
-    return isSturdy(w.idAt(w.neighbor(p, attachDir(st))));
-  }
+  if (b.needsFloor) return sturdyAt(w, p, DIR.D);
+  if (b.attachable) return sturdyAt(w, p, attachDir(w.states[p]));
   return true;
 }
 /** Wraps a neighbor handler with the survival check. */
