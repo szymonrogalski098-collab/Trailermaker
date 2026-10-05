@@ -102,3 +102,12 @@ export function defaultState(id) {
   if (b.sixway || b.rotatable) s = setField(s, 'facing', DIR.N);
   return s;
 }
+
+/** Full opaque cube (used for 3D face culling). */
+export function isFullCube(id, state = 0) {
+  const b = BLOCKS[id];
+  if (!b.solid || b.translucent || b.head) return false;
+  if (b.name === 'daylight_sensor') return false;
+  if (b.piston && S.extended(state)) return false;
+  return true;
+}

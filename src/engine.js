@@ -1,6 +1,6 @@
 // RedstoneEngine: update queue + scheduled ticks + block events. No rendering code.
 import { ID, BLOCKS, DIR, S, setField, defaultState, opposite } from './blocks.js';
-import { BEHAVIORS } from './behaviors.js';
+import { BEHAVIORS, restoreTicks } from './behaviors.js';
 import { handlePistonEvent } from './piston.js';
 
 export const PRIORITY = { EXTREMELY_HIGH: -3, VERY_HIGH: -2, HIGH: -1, NORMAL: 0 };
@@ -90,7 +90,7 @@ export class RedstoneEngine {
   /** Re-evaluate every non-air block (after load / undo). */
   settle() {
     this.beginAction();
-    for (let p = 0; p < this.world.size; p++) if (this.world.ids[p] !== 0) this.queue.push(p);
+    for (let p = 0; p < this.world.size; p++) if (this.world.ids[p] !== 0) { this.queue.push(p); restoreTicks(this, p); }
     this.drain();
   }
 

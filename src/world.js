@@ -35,9 +35,10 @@ export class World {
 
   /** Raw write; returns true when something changed. Notifies listeners. */
   setRaw(i, id, state = 0) {
-    if (this.ids[i] === id && this.states[i] === state) return false;
+    const oldId = this.ids[i]; const oldState = this.states[i];
+    if (oldId === id && oldState === state) return false;
     this.ids[i] = id; this.states[i] = state;
-    for (const fn of this.listeners) fn(i);
+    for (const fn of this.listeners) fn(i, oldId, oldState);
     return true;
   }
   onChange(fn) { this.listeners.push(fn); }

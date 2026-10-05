@@ -215,3 +215,12 @@ function pistonBehavior(id) {
   });
 }
 pistonBehavior(ID.PISTON); pistonBehavior(ID.STICKY_PISTON);
+
+// ---------- restore pending ticks after load/undo ----------
+const restorers = {
+  [ID.STONE_BUTTON]: (e, p) => { if (S.powered(e.world.states[p]) && !e.hasPending(p)) e.schedule(p, BLOCKS[ID.STONE_BUTTON].pressTicks); },
+  [ID.WOODEN_BUTTON]: (e, p) => { if (S.powered(e.world.states[p]) && !e.hasPending(p)) e.schedule(p, BLOCKS[ID.WOODEN_BUTTON].pressTicks); },
+  [ID.OBSERVER]: (e, p) => { if (S.powered(e.world.states[p]) && !e.hasPending(p)) e.schedule(p, 2); },
+  [ID.REDSTONE_LAMP]: (e, p) => { if (S.powered(e.world.states[p]) && !e.hasPending(p)) e.schedule(p, 1); },
+};
+export function restoreTicks(e, p) { const r = restorers[e.world.ids[p]]; if (r) r(e, p); }
