@@ -20,7 +20,7 @@ Three.js r128 jest przypięty z cdnjs (`index.html`) i cache'owany przez service
 | Stawiaj | dotknięcie pokazuje podgląd, puszczenie stawia; przeciągnięcie poza ~12 px anuluje. W 3D: na ścianie klikniętego bloku (raycast). Długie przytrzymanie na postawionym bloku obraca go. |
 | Usuń | usuwa blok |
 | Użyj | dźwignia, przycisk, płyta (przełącz ręcznie), przekaźnik (cykl opóźnienia 1-4), komparator (porównanie/odejmowanie), czujnik światła (dzień/noc/odwrócony), tarcza |
-| Zaznacz | dwa tapy = prostokątny region (3D: box); `Kopiuj` / `Wytnij` / `Wklej` (tap = lewy-dolny róg wklejki) |
+| Zaznacz | dwa tapy = prostokątny region (3D: box); `Kopiuj` / `Wytnij` / `Wklej` (tap = minimalny róg wklejki (najmniejsze X, Y, Z)) |
 
 **Paleta** (chip z wybranym blokiem): zakładki Redstone / Zasilanie / Wełna / Bloki / Inne. `Obróć` cykluje kierunek wybranego bloku
 (dla pochodni, dźwigni i przycisków: podłoga + 4 ściany). Undo/Redo (200 kroków, obejmuje też skutki kaskady redstone).
