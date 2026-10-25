@@ -20,7 +20,7 @@ export function rleDecode(pairs, length, label) {
   const out = new Uint32Array(length); let pos = 0;
   for (let i = 0; i < pairs.length; i += 2) {
     const v = pairs[i]; const n = pairs[i + 1];
-    if (!Number.isInteger(v) || v < 0 || !Number.isInteger(n) || n < 1) throw new Error(`${label}: bad run at ${i}`);
+    if (!Number.isInteger(v) || v < 0 || v > 0xFFFFFFFF || !Number.isInteger(n) || n < 1) throw new Error(`${label}: bad run at ${i}`);
     if (pos + n > length) throw new Error(`${label}: data longer than grid`);
     out.fill(v, pos, pos + n); pos += n;
   }

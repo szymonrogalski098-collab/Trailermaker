@@ -77,6 +77,7 @@ export class Editor {
     const p = w.index(x, y, z); const b = BLOCKS[w.ids[p]];
     if (!b.rotatable) return false;
     let st = w.states[p];
+    if (b.piston && S.extended(st)) return false; // would orphan the piston head
     const next = rotateFacing(b, S.facing(st));
     st = setField(st, 'facing', next);
     this.withHistory(() => { this.engine.beginAction(); this.engine.setState(p, st); this.engine.drain(); });
@@ -94,7 +95,9 @@ export class Editor {
     });
   }
   clearAll() {
-    this.withHistory(() => { this.world.ids.fill(0); this.world.states.fill(0); });
+    this.withHistory(() => {
+      for (let i = 0; i < this.world.size; i++) if (this.world.ids[i] || this.world.states[i]) this.world.setRaw(i, 0, 0);
+    });
     this.engine.resetRuntime();
   }
 

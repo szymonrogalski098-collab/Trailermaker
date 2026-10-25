@@ -44,3 +44,20 @@ test('clear layer', () => {
   ed.place(1, 1, 1, ID.STONE, 0); ed.place(2, 1, 1, ID.STONE, 0); ed.clearLayer(1);
   assertEq(s.id(1, 1, 1), 0); assertEq(s.id(2, 1, 1), 0); assertEq(s.id(1, 0, 1), ID.STONE);
 });
+test('clearAll is undoable and does not corrupt history', () => {
+  const s = makeSim(); const ed = new Editor(s.e);
+  ed.place(1, 1, 1, ID.STONE, 0); ed.place(2, 1, 1, ID.STONE, 0); ed.clearAll();
+  assertEq(s.id(1, 1, 1), 0); ed.undo();
+  assertEq(s.id(1, 1, 1), ID.STONE); assertEq(s.id(2, 1, 1), ID.STONE);
+});
+test('settle on a dense world does not truncate (budget is per batch)', () => {
+  const s = makeSim(40, 8, 40);
+  for (let i = 0; i < s.world.size; i++) s.world.setRaw(i, ID.STONE, 0);
+  s.world.setRaw(s.world.index(5, 1, 5), ID.REDSTONE_DUST, 15 << 5);
+  s.e.settle(); assert(!s.e.overflow, 'no overflow'); assertEq(s.power(5, 1, 5), 0);
+});
+test('import rejects values >= 2^32 instead of wrapping', () => {
+  const s = makeSim(); const d = JSON.parse(JSON.stringify(serializeWorld(s.world)));
+  d.blocks = [4294967297, s.world.size];
+  try { deserializeWorld(d); } catch (e) { return; } throw new Error('should throw');
+});

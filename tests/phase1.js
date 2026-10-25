@@ -212,8 +212,9 @@ test('dust line powers blocks at its ends only; dot powers all four sides', () =
   assert(s.on(10, 1, 4) && s.on(10, 1, 6) && s.on(9, 1, 5), 'dot powers all sides');
 });
 test('update budget guard sets overflow instead of freezing', () => {
-  const s = makeSim(); s.e.maxUpdates = 50;
-  s.put(0, 1, 5, 'redstone_block'); s.dustLine(1, 1, 5, DIR.E, 16);
+  const s = makeSim(); s.dustLine(1, 1, 5, DIR.E, 16);
+  s.e.maxUpdates = 50;
+  s.put(0, 1, 5, 'redstone_block'); // one action that triggers a long propagation
   assert(s.e.overflow, 'overflow flagged');
 });
 test('layer 0 dust sits on the implicit bedrock floor', () => {

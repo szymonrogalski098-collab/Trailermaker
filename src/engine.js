@@ -89,9 +89,13 @@ export class RedstoneEngine {
 
   /** Re-evaluate every non-air block (after load / undo). */
   settle() {
-    this.beginAction();
-    for (let p = 0; p < this.world.size; p++) if (this.world.ids[p] !== 0) { this.queue.push(p); restoreTicks(this, p); }
-    this.drain();
+    this.overflow = false;
+    for (let p = 0, n = 0; p < this.world.size; p++) {
+      if (this.world.ids[p] === 0) continue;
+      this.queue.push(p); restoreTicks(this, p);
+      if (++n % 2048 === 0) { this.updates = 0; this.drain(); } // batches keep the budget meaningful on dense worlds
+    }
+    this.updates = 0; this.drain();
   }
 
   resetRuntime() {
@@ -147,7 +151,7 @@ export class RedstoneEngine {
   }
 
   // ---------- internals ----------
-  beginAction() { this.updates = 0; }
+  beginAction() { this.updates = 0; this.overflow = false; }
 
   notifyChange(p, idChanged) {
     this.notifyObservers(p);
