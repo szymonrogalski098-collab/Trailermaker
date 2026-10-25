@@ -97,3 +97,24 @@ test('removing a piston base removes its head', () => {
   const s = pistonRig(); s.put(5, 1, 4, 'lever'); s.flip(5, 1, 4); s.e.step();
   s.e.remove(5, 1, 5); assertEq(s.id(6, 1, 5), 0);
 });
+test('observer pushed while pulsing does not stay stuck on', () => {
+  const s = makeSim();
+  s.put(5, 1, 5, 'piston', { facing: DIR.E }); s.put(5, 1, 4, 'lever');
+  s.put(6, 1, 5, 'observer', { facing: DIR.N });
+  s.put(6, 1, 4, 'wool_white'); s.e.run(2); assert(s.on(6, 1, 5), 'observer pulsing');
+  s.flip(5, 1, 4); s.e.step(); assertEq(s.id(7, 1, 5), ID.OBSERVER, 'pushed');
+  s.e.run(12); assert(!s.on(7, 1, 5), 'observer unstuck');
+});
+test('repeater survives on an upward piston head', () => {
+  const s = makeSim();
+  s.put(5, 1, 5, 'piston', { facing: DIR.U }); s.put(5, 1, 4, 'lever');
+  s.put(5, 2, 5, 'repeater', { facing: DIR.E });
+  s.flip(5, 1, 4); s.e.step();
+  assertEq(s.id(5, 2, 5), ID.PISTON_HEAD); assertEq(s.id(5, 3, 5), ID.REPEATER, 'repeater pushed up and kept');
+});
+test('removing a head removes the whole piston and does not re-extend', () => {
+  const s = makeSim(); s.put(5, 1, 5, 'piston', { facing: DIR.E }); s.put(5, 1, 4, 'lever');
+  s.flip(5, 1, 4); s.e.step();
+  s.put(6, 1, 5, 'stone'); s.e.run(5);
+  assertEq(s.id(5, 1, 5), 0, 'base removed'); assertEq(s.id(6, 1, 5), ID.STONE); assertEq(s.id(7, 1, 5), 0, 'nothing pushed');
+});

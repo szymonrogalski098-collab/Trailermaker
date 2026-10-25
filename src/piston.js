@@ -1,6 +1,6 @@
 // Piston push/pull logic (push limit 12, immovable blocks, destroy-on-push blocks).
 import { ID, BLOCKS, DIR, S, setField, opposite } from './blocks.js';
-import { pistonShouldExtend } from './behaviors.js';
+import { pistonShouldExtend, restoreTicks } from './behaviors.js';
 
 export const PUSH_LIMIT = 12;
 
@@ -33,6 +33,7 @@ function extend(e, p) {
     const id = w.ids[from]; const s = w.states[from];
     e.replace(to, id, s);
     e.replace(from, 0, 0);
+    restoreTicks(e, to); // pending ticks do not travel with the block
   }
   const front = w.neighbor(p, f);
   const headState = setField(setField(setField(0, 'facing', f), 'mode', BLOCKS[w.ids[p]].sticky ? 1 : 0), 'extended', 1);
@@ -57,6 +58,7 @@ function retract(e, p) {
   if (!pullable(w, far)) return;
   e.replace(head, w.ids[far], w.states[far]);
   e.replace(far, 0, 0);
+  restoreTicks(e, head);
 }
 
 export function handlePistonEvent(e, ev) {

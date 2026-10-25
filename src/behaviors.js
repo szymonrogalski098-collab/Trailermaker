@@ -13,7 +13,10 @@ const reg = (id, b) => { BEHAVIORS[id] = b; };
 /** Sturdy support at neighbor n; the void below layer 0 counts as a bedrock floor. */
 function sturdyAt(w, p, dir) {
   const n = w.neighbor(p, dir);
-  return n < 0 ? dir === DIR.D : isSturdy(w.ids[n]);
+  if (n < 0) return dir === DIR.D;
+  // an upward piston head is a rigid full top plate
+  if (dir === DIR.D && w.ids[n] === ID.PISTON_HEAD && S.facing(w.states[n]) === DIR.U) return true;
+  return isSturdy(w.ids[n]);
 }
 function supported(e, p) {
   const w = e.world; const b = BLOCKS[w.ids[p]];

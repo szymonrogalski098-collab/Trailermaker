@@ -38,3 +38,7 @@
 10. Blok redstone, czujnik światła i tarcza mają `conductor:false` (blok redstone w Javie: `isRedstoneConductor = never`).
     Skutek: blok redstone nad pyłem nie blokuje wspinania się pyłu obok, a sam nie jest zasilany "strong". Zamierzone.
 11. Scheduled ticki: maks. jeden oczekujący tick na (pozycja, blok), jak w Javie; kolejne `schedule` są ignorowane.
+12. Scheduled tiki są związane z pozycją: po wymianie/przesunięciu bloku stare ticki są odrzucane; tłok odtwarza tiki
+    (przycisk, obserwator, lampa) dla przesuniętego bloku. W Javie tick podróżuje z blokiem - efekt końcowy podobny.
+13. Edytor: usunięcie/nadpisanie głowicy tłoka usuwa cały tłok (baza + głowica), usunięcie bazy usuwa głowicę.
+14. Głowica tłoka skierowana w górę jest sztywną podporą dla przekaźnika/pyłu itp.

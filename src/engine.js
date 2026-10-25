@@ -147,8 +147,8 @@ export class RedstoneEngine {
       const head = w.neighbor(p, f);
       if (w.idAt(head) === ID.PISTON_HEAD) this.replace(head, 0, 0);
     } else if (id === ID.PISTON_HEAD) {
-      const base = w.neighbor(p, opposite(f));
-      if (BLOCKS[w.idAt(base)].piston) this.setState(base, setField(w.states[base], 'extended', 0));
+      const base = w.neighbor(p, opposite(f)); // the head is part of the piston: remove it as a whole
+      if (BLOCKS[w.idAt(base)].piston) this.replace(base, 0, 0);
     }
   }
 
@@ -216,7 +216,9 @@ export class RedstoneEngine {
     while (this.ticks.size && this.ticks.peek().time <= this.time) {
       const t = this.ticks.pop();
       const list = this.pending.get(t.p);
-      if (list) { const i = list.indexOf(t.time); if (i >= 0) list.splice(i, 1); if (!list.length) this.pending.delete(t.p); }
+      const at = list ? list.indexOf(t.time) : -1;
+      if (at < 0) continue; // stale: the block was replaced or moved after this tick was scheduled
+      list.splice(at, 1); if (!list.length) this.pending.delete(t.p);
       if (w.ids[t.p] !== t.id) continue;
       const b = BEHAVIORS[t.id];
       if (b && b.tick) b.tick(this, t.p);
