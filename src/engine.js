@@ -116,7 +116,9 @@ export class RedstoneEngine {
   setField(p, name, value) { return this.setState(p, setField(this.world.states[p], name, value)); }
   breakBlock(p) { this.replace(p, 0, 0); }
 
+  /** Java keeps at most one pending tick per (position, block): a second schedule is ignored. */
   schedule(p, delay, prio = PRIORITY.NORMAL) {
+    if (this.hasPending(p)) return;
     const time = this.time + delay;
     this.ticks.push({ time, prio, seq: this.seq++, p, id: this.world.ids[p] });
     let list = this.pending.get(p);

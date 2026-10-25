@@ -35,3 +35,6 @@
 8. Dyskretny podkład: pustka pod warstwą Y=0 traktowana jest jako litą podłogę (pył/pochodnie można stawiać na Y=0).
 9. Wycofanie wsparcia: blok wymagający podpory (pył, pochodnia, dźwignia, przekaźnik...) znika przy utracie podpory
    (bez dropu); edytor odmawia postawienia go bez podpory.
+10. Blok redstone, czujnik światła i tarcza mają `conductor:false` (blok redstone w Javie: `isRedstoneConductor = never`).
+    Skutek: blok redstone nad pyłem nie blokuje wspinania się pyłu obok, a sam nie jest zasilany "strong". Zamierzone.
+11. Scheduled ticki: maks. jeden oczekujący tick na (pozycja, blok), jak w Javie; kolejne `schedule` są ignorowane.

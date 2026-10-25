@@ -222,3 +222,16 @@ test('layer 0 dust sits on the implicit bedrock floor', () => {
   s.put(5, 0, 5, 'redstone_dust'); s.put(4, 0, 5, 'redstone_block');
   assertEq(s.power(5, 0, 5), 15);
 });
+test('repeater stretches pulses shorter than its delay (no stuck-on)', () => {
+  for (let d = 0; d < 4; d++) for (let len = 1; len < (d + 1) * 2; len++) {
+    const s = makeSim();
+    s.put(4, 1, 5, 'lever'); s.put(5, 1, 5, 'repeater', { facing: DIR.E, delay: d });
+    s.flip(4, 1, 5); s.e.run(len); s.flip(4, 1, 5);
+    s.e.run(30);
+    assert(!s.on(5, 1, 5), `delay ${d + 1}, pulse ${len}: repeater stuck on`);
+  }
+  const s = makeSim(); s.put(4, 1, 5, 'lever'); s.put(5, 1, 5, 'repeater', { facing: DIR.E, delay: 0 });
+  s.flip(4, 1, 5); s.e.step(); s.flip(4, 1, 5);
+  const h = []; for (let i = 0; i < 6; i++) { s.e.step(); h.push(s.on(5, 1, 5) ? 1 : 0); }
+  assertEq(h.join(''), '110000', 'on for [2,4)');
+});
